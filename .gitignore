@@ -18,5 +18,5 @@ cmd/summarize/main
 vendor/
 
 # IDEs directories
-
+.idea
 .vscode
