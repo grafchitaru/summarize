@@ -37,3 +37,44 @@ func (s *Storage) Ping() error {
 func (s *Storage) Close() {
 	s.pool.Close()
 }
+
+func (s *Storage) GetUser(login string) (string, error) {
+	const op = "storage.postgresql.GetUser"
+
+	var id string
+	err := s.pool.QueryRow(context.Background(), "SELECT id FROM users WHERE login = $1", login).Scan(&id)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return id, nil
+}
+
+func (s *Storage) Registration(id string, login string, password string) (string, error) {
+	const op = "storage.postgresql.Registration"
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	tx, err := s.pool.Begin(ctx)
+
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+	defer tx.Rollback(context.Background())
+
+	now := time.Now()
+
+	_, err = tx.Exec(ctx, `
+        INSERT INTO users(id, login, password, created_at)   
+        VALUES($1, $2, $3, $4);
+    `, id, login, password, now.Format("2006-01-02  15:04:05"))
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	if err := tx.Commit(context.Background()); err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return id, nil
+}

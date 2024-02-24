@@ -24,7 +24,7 @@ func New(ctx config.HandlerContext) {
 	})
 
 	r.Post("/api/user/register", func(res http.ResponseWriter, req *http.Request) {
-		handlers.Register(ctx, res)
+		handlers.Register(ctx, res, req)
 	})
 
 	r.Post("/api/user/login", func(res http.ResponseWriter, req *http.Request) {

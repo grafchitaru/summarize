@@ -32,28 +32,20 @@ func WithUserCookie(ctx config.HandlerContext) func(next http.Handler) http.Hand
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			isBatchByUserID := r.Method == http.MethodGet && r.RequestURI != "/api/user/register" && r.RequestURI != "/api/user/login" && r.RequestURI != "/ping"
 
-			if err == http.ErrNoCookie {
-				if isBatchByUserID {
+			if err != nil {
+				if r.RequestURI != "/api/user/register" && r.RequestURI != "/api/user/login" && r.RequestURI != "/ping" {
 					http.Error(w, "Unauthorized", http.StatusUnauthorized)
 					return
 				}
-			}
-
-			if err != nil || cookie.Value == "" {
-				userID := uuid.New()
-				token, _ := GenerateToken(userID, ctx.Config.SecretKey)
-				setCookieAuthorization(w, r, token)
 			} else {
 				_, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
 					return []byte(ctx.Config.SecretKey), nil
 				})
 
 				if err != nil {
-					userID := uuid.New()
-					token, _ := GenerateToken(userID, ctx.Config.SecretKey)
-					setCookieAuthorization(w, r, token)
+					http.Error(w, "Unauthorized", http.StatusUnauthorized)
+					return
 				}
 			}
 
@@ -62,7 +54,7 @@ func WithUserCookie(ctx config.HandlerContext) func(next http.Handler) http.Hand
 	}
 }
 
-func setCookieAuthorization(w http.ResponseWriter, r *http.Request, token string) {
+func SetCookieAuthorization(w http.ResponseWriter, r *http.Request, token string) {
 	//nolint:exhaustruct
 	cook := &http.Cookie{
 		Name:  "token",
