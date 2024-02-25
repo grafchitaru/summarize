@@ -1,6 +1,9 @@
 package users
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"golang.org/x/crypto/bcrypt"
+	"log"
+)
 
 func HashPassword(password string) (string, error) {
 	passwordBytes := []byte(password)
@@ -11,4 +14,14 @@ func HashPassword(password string) (string, error) {
 	}
 
 	return string(hashedPasswordBytes), nil
+}
+
+func ComparePasswords(hashedPwd string, plainPwd []byte) bool {
+	byteHash := []byte(hashedPwd)
+	err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
 }

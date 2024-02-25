@@ -50,6 +50,18 @@ func (s *Storage) GetUser(login string) (string, error) {
 	return id, nil
 }
 
+func (s *Storage) GetUserPassword(login string) (string, error) {
+	const op = "storage.postgresql.GetUserPassword"
+
+	var password string
+	err := s.pool.QueryRow(context.Background(), "SELECT password FROM users WHERE login = $1", login).Scan(&password)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return password, nil
+}
+
 func (s *Storage) Registration(id string, login string, password string) (string, error) {
 	const op = "storage.postgresql.Registration"
 
