@@ -12,6 +12,13 @@ type Summarize struct {
 	Tokens    uint64    `json:"tokens"`
 }
 
+type Stat struct {
+	UserId string `json:"user_id"`
+	Status string `json:"status"`
+	Count  uint64 `json:"count"`
+	Tokens uint64 `json:"tokens"`
+}
+
 type Repositories interface {
 	Ping() error
 	Close()
@@ -23,4 +30,5 @@ type Repositories interface {
 	UpdateSummarizeResult(id string, status string, result string) error
 	GetSummarize(id string, user_id string) (Summarize, error)
 	GetSummarizeByText(text string) (string, error)
+	GetStat(user_id string) ([]Stat, error)
 }

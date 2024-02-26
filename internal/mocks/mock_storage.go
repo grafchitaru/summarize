@@ -102,3 +102,7 @@ func (ms *MockStorage) CreateSummarize(id string, userID string, text string, st
 	}
 	return nil
 }
+
+func (ms *MockStorage) GetStat(user_id string) ([]storage.Stat, error) {
+	return []storage.Stat{}, nil
+}

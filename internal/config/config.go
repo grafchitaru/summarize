@@ -12,7 +12,7 @@ import (
 )
 
 type Config struct {
-	HTTPServerAddress    string `env:"SERVER_ADDRESS" envDefault:"127.0.0.1:8117"`
+	HTTPServerAddress    string `env:"SERVER_ADDRESS" envDefault:"127.0.0.1:8119"`
 	PostgresDatabaseDsn  string `env:"DATABASE_DSN" envDefault:"postgres://root:root@localhost:54322/app"`
 	SecretKey            string `env:"SECRET_KEY" envDefault:"your_secret_key"`
 	GigaChatClientId     string `env:"GIGACHAT_CLIENT_ID"`

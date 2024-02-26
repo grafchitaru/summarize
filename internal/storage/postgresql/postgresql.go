@@ -198,3 +198,28 @@ func (s *Storage) GetSummarizeByText(text string) (string, error) {
 
 	return id, nil
 }
+
+func (s *Storage) GetStat(user_id string) ([]storage.Stat, error) {
+	const op = "storage.postgresql.GetStat"
+
+	rows, err := s.pool.Query(context.Background(), "SELECT user_id, status, count(id), sum(tokens) AS tokens FROM summarize WHERE user_id = $1 GROUP BY user_id, status;", user_id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	defer rows.Close()
+
+	var stats []storage.Stat
+	for rows.Next() {
+		var stat storage.Stat
+		if err := rows.Scan(&stat.UserId, &stat.Status, &stat.Count, &stat.Tokens); err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		stats = append(stats, stat)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return stats, nil
+}

@@ -40,7 +40,7 @@ func New(ctx config.HandlerContext) {
 	})
 
 	r.Get("/api/user/stat", func(res http.ResponseWriter, req *http.Request) {
-		handlers.Stat(ctx, res)
+		handlers.Stat(ctx, res, req)
 	})
 
 	r.Get("/api/user/status", func(res http.ResponseWriter, req *http.Request) {
