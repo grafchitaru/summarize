@@ -106,3 +106,7 @@ func (ms *MockStorage) CreateSummarize(id string, userID string, text string, st
 func (ms *MockStorage) GetStat(user_id string) ([]storage.Stat, error) {
 	return []storage.Stat{}, nil
 }
+
+func (ms *MockStorage) GetStatus(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (storage.Status, error) {
+	return storage.Status{}, nil
+}

@@ -19,6 +19,11 @@ type Stat struct {
 	Tokens uint64 `json:"tokens"`
 }
 
+type Status struct {
+	Count  int `json:"count"`
+	Tokens int `json:"tokens"`
+}
+
 type Repositories interface {
 	Ping() error
 	Close()
@@ -31,4 +36,5 @@ type Repositories interface {
 	GetSummarize(id string, user_id string) (Summarize, error)
 	GetSummarizeByText(text string) (string, error)
 	GetStat(user_id string) ([]Stat, error)
+	GetStatus(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (Status, error)
 }

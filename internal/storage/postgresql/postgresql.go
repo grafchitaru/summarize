@@ -174,6 +174,7 @@ func (s *Storage) UpdateSummarizeResult(id string, status string, result string)
 
 	return nil
 }
+
 func (s *Storage) GetSummarize(id string, user_id string) (storage.Summarize, error) {
 	const op = "storage.postgresql.GetSummarize"
 
@@ -222,4 +223,19 @@ func (s *Storage) GetStat(user_id string) ([]storage.Stat, error) {
 	}
 
 	return stats, nil
+}
+
+func (s *Storage) GetStatus(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (storage.Status, error) {
+	const op = "storage.postgresql.GetStatus"
+
+	var status storage.Status
+
+	err := s.pool.QueryRow(context.Background(), "SELECT count(id) AS count, sum(tokens) AS tokens FROM summarize WHERE user_id = $1", user_id).Scan(&status.Count, &status.Tokens)
+	if err != nil {
+		return storage.Status{}, fmt.Errorf("%s: %w", op, err)
+	}
+	status.Count = AiMaxLimitCount - status.Count
+	status.Tokens = AiMaxLimitTokens - status.Tokens
+
+	return status, nil
 }

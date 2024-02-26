@@ -44,7 +44,7 @@ func New(ctx config.HandlerContext) {
 	})
 
 	r.Get("/api/user/status", func(res http.ResponseWriter, req *http.Request) {
-		handlers.Status(ctx, res)
+		handlers.Status(ctx, res, req)
 	})
 
 	err := http.ListenAndServe(ctx.Config.HTTPServerAddress, r)
