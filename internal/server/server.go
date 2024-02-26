@@ -32,7 +32,7 @@ func New(ctx config.HandlerContext) {
 	})
 
 	r.Post("/api/user/summarize", func(res http.ResponseWriter, req *http.Request) {
-		handlers.Summarize(ctx, res)
+		handlers.Summarize(ctx, res, req)
 	})
 
 	r.Get("/api/user/summarize/{id}", func(res http.ResponseWriter, req *http.Request) {
