@@ -174,12 +174,12 @@ func (s *Storage) UpdateSummarizeResult(id string, status string, result string)
 
 	return nil
 }
-func (s *Storage) GetSummarize(id string) (storage.Summarize, error) {
+func (s *Storage) GetSummarize(id string, user_id string) (storage.Summarize, error) {
 	const op = "storage.postgresql.GetSummarize"
 
 	var summarize storage.Summarize
 
-	err := s.pool.QueryRow(context.Background(), "SELECT id, user_id, created_at, text, result, status, tokens FROM summarize WHERE id = $1", id).Scan(&summarize.Id, &summarize.UserId, &summarize.CreatedAt, &summarize.Text, &summarize.Result, &summarize.Status, &summarize.Tokens)
+	err := s.pool.QueryRow(context.Background(), "SELECT * FROM summarize WHERE id = $1 AND user_id = $2", id, user_id).Scan(&summarize.Id, &summarize.UserId, &summarize.CreatedAt, &summarize.Text, &summarize.Result, &summarize.Status, &summarize.Tokens)
 	if err != nil {
 		return storage.Summarize{}, fmt.Errorf("%s: %w", op, err)
 	}

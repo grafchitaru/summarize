@@ -85,7 +85,7 @@ func (ms *MockStorage) UpdateSummarizeResult(id string, status string, result st
 	return nil
 }
 
-func (ms *MockStorage) GetSummarize(id string) (storage.Summarize, error) {
+func (ms *MockStorage) GetSummarize(id string, user_id string) (storage.Summarize, error) {
 	return storage.Summarize{}, nil
 }
 

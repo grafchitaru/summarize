@@ -21,6 +21,6 @@ type Repositories interface {
 	CreateSummarize(id string, user_id string, text string, status string, tokens int) error
 	UpdateSummarizeStatus(id string, status string) error
 	UpdateSummarizeResult(id string, status string, result string) error
-	GetSummarize(id string) (Summarize, error)
+	GetSummarize(id string, user_id string) (Summarize, error)
 	GetSummarizeByText(text string) (string, error)
 }

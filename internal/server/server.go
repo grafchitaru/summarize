@@ -36,7 +36,7 @@ func New(ctx config.HandlerContext) {
 	})
 
 	r.Get("/api/user/summarize/{id}", func(res http.ResponseWriter, req *http.Request) {
-		handlers.GetSummarizeText(ctx, res)
+		handlers.GetSummarizeText(ctx, res, req)
 	})
 
 	r.Get("/api/user/stat", func(res http.ResponseWriter, req *http.Request) {
