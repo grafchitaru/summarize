@@ -10,7 +10,7 @@ type GetUserPasswordFunc func(login string) (string, error)
 type RegistrationFunc func(id string, login string, password string) (string, error)
 type GetSummarizeByTextFunc func(text string) (string, error)
 type CreateSummarizeFunc func(id string, user_id string, text string, status string, tokens int) error
-
+type GetStatusFunc func(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (storage.Status, error)
 type MockStorage struct {
 	PingError              error
 	GetUserFunc            GetUserFunc
@@ -18,6 +18,7 @@ type MockStorage struct {
 	GetUserPasswordFunc    GetUserPasswordFunc
 	GetSummarizeByTextFunc GetSummarizeByTextFunc
 	CreateSummarizeFunc    CreateSummarizeFunc
+	GetStatusFunc          GetStatusFunc
 	Users                  map[string]string
 	IDs                    map[string]string
 	Passwords              map[string]string

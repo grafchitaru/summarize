@@ -1,3 +1,7 @@
+Pre
+```
+cp example.env .env
+```
 Run tests
 ```
 make test
