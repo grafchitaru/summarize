@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/grafchitaru/summarize/internal/storage"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -42,9 +43,15 @@ func (s *Storage) Close() {
 func (s *Storage) GetUser(login string) (string, error) {
 	const op = "storage.postgresql.GetUser"
 
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	var id string
-	err := s.pool.QueryRow(context.Background(), "SELECT id FROM users WHERE login = $1", login).Scan(&id)
+	err := s.pool.QueryRow(ctx, "SELECT id FROM users WHERE login = $1", login).Scan(&id)
 	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return "", fmt.Errorf("%s: operation timed out: %w", op, err)
+		}
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -54,9 +61,15 @@ func (s *Storage) GetUser(login string) (string, error) {
 func (s *Storage) GetUserPassword(login string) (string, error) {
 	const op = "storage.postgresql.GetUserPassword"
 
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
 	var password string
-	err := s.pool.QueryRow(context.Background(), "SELECT password FROM users WHERE login = $1", login).Scan(&password)
+	err := s.pool.QueryRow(ctx, "SELECT password FROM users WHERE login = $1", login).Scan(&password)
 	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return "", fmt.Errorf("%s: operation timed out: %w", op, err)
+		}
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -68,24 +81,24 @@ func (s *Storage) Registration(id string, login string, password string) (string
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	tx, err := s.pool.Begin(ctx)
 
+	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
-	defer tx.Rollback(context.Background())
+	defer tx.Rollback(ctx)
 
 	now := time.Now()
 
 	_, err = tx.Exec(ctx, `
         INSERT INTO users(id, login, password, created_at)   
         VALUES($1, $2, $3, $4);
-    `, id, login, password, now.Format("2006-01-02  15:04:05"))
+    `, id, login, password, now.Format("2006-01-02 15:04:05"))
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	if err := tx.Commit(context.Background()); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -178,10 +191,16 @@ func (s *Storage) UpdateSummarizeResult(id string, status string, result string)
 func (s *Storage) GetSummarize(id string, user_id string) (storage.Summarize, error) {
 	const op = "storage.postgresql.GetSummarize"
 
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
 	var summarize storage.Summarize
 
-	err := s.pool.QueryRow(context.Background(), "SELECT * FROM summarize WHERE id = $1 AND user_id = $2", id, user_id).Scan(&summarize.Id, &summarize.UserId, &summarize.CreatedAt, &summarize.Text, &summarize.Result, &summarize.Status, &summarize.Tokens)
+	err := s.pool.QueryRow(ctx, "SELECT * FROM summarize WHERE id = $1 AND user_id = $2", id, user_id).Scan(&summarize.Id, &summarize.UserId, &summarize.CreatedAt, &summarize.Text, &summarize.Result, &summarize.Status, &summarize.Tokens)
 	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return storage.Summarize{}, fmt.Errorf("%s: operation timed out: %w", op, err)
+		}
 		return storage.Summarize{}, fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -191,9 +210,15 @@ func (s *Storage) GetSummarize(id string, user_id string) (storage.Summarize, er
 func (s *Storage) GetSummarizeByText(text string) (string, error) {
 	const op = "storage.postgresql.GetSummarizeByText"
 
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
 	var id string
-	err := s.pool.QueryRow(context.Background(), "SELECT id FROM summarize WHERE text = $1", text).Scan(&id)
+	err := s.pool.QueryRow(ctx, "SELECT id FROM summarize WHERE text = $1", text).Scan(&id)
 	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return "", fmt.Errorf("%s: operation timed out: %w", op, err)
+		}
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -203,7 +228,10 @@ func (s *Storage) GetSummarizeByText(text string) (string, error) {
 func (s *Storage) GetStat(user_id string) ([]storage.Stat, error) {
 	const op = "storage.postgresql.GetStat"
 
-	rows, err := s.pool.Query(context.Background(), "SELECT user_id, status, count(id), sum(tokens) AS tokens FROM summarize WHERE user_id = $1 GROUP BY user_id, status;", user_id)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	rows, err := s.pool.Query(ctx, "SELECT user_id, status, count(id), sum(tokens) AS tokens FROM summarize WHERE user_id = $1 GROUP BY user_id, status;", user_id)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -228,10 +256,15 @@ func (s *Storage) GetStat(user_id string) ([]storage.Stat, error) {
 func (s *Storage) GetStatus(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (storage.Status, error) {
 	const op = "storage.postgresql.GetStatus"
 
-	var status storage.Status
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
 
-	err := s.pool.QueryRow(context.Background(), "SELECT count(id) AS count, sum(tokens) AS tokens FROM summarize WHERE user_id = $1", user_id).Scan(&status.Count, &status.Tokens)
+	var status storage.Status
+	err := s.pool.QueryRow(ctx, "SELECT count(id) AS count, sum(tokens) AS tokens FROM summarize WHERE user_id = $1", user_id).Scan(&status.Count, &status.Tokens)
 	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return storage.Status{}, fmt.Errorf("%s: operation timed out: %w", op, err)
+		}
 		return storage.Status{}, fmt.Errorf("%s: %w", op, err)
 	}
 	status.Count = AiMaxLimitCount - status.Count
