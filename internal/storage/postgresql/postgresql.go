@@ -100,7 +100,7 @@ func (s *Storage) CreateSummarize(id string, user_id string, text string, status
 	tx, err := s.pool.Begin(ctx)
 
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s begin: %w", op, err)
 	}
 	defer tx.Rollback(context.Background())
 
@@ -111,11 +111,11 @@ func (s *Storage) CreateSummarize(id string, user_id string, text string, status
         VALUES($1, $2, $3, $4, $5, $6);
     `, id, user_id, now.Format("2006-01-02  15:04:05"), text, status, tokens)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s exec: %w", op, err)
 	}
 
 	if err := tx.Commit(context.Background()); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s commit: %w", op, err)
 	}
 
 	return nil
@@ -128,7 +128,7 @@ func (s *Storage) UpdateSummarizeStatus(id string, status string) error {
 	tx, err := s.pool.Begin(ctx)
 
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s begin: %w", op, err)
 	}
 	defer tx.Rollback(context.Background())
 
@@ -138,11 +138,11 @@ func (s *Storage) UpdateSummarizeStatus(id string, status string) error {
         WHERE id = $2;
     `, status, id)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s exec: %w", op, err)
 	}
 
 	if err := tx.Commit(context.Background()); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s commit: %w", op, err)
 	}
 
 	return nil
@@ -155,7 +155,7 @@ func (s *Storage) UpdateSummarizeResult(id string, status string, result string)
 	tx, err := s.pool.Begin(ctx)
 
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s begin: %w", op, err)
 	}
 	defer tx.Rollback(context.Background())
 
@@ -165,11 +165,11 @@ func (s *Storage) UpdateSummarizeResult(id string, status string, result string)
         WHERE id = $3;
     `, status, result, id)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s exec: %w", op, err)
 	}
 
 	if err := tx.Commit(context.Background()); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s commit: %w", op, err)
 	}
 
 	return nil
