@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"strings"
 	"time"
@@ -219,16 +220,7 @@ func (s *Ai) GetCountTokens(text string) int {
 		tokenLength = 4
 	}
 
-	var tokens int
-	for len(text) > 0 {
-		if len(text) >= tokenLength {
-			tokens++
-			text = text[tokenLength:]
-		} else {
-			tokens++
-			text = ""
-		}
-	}
+	tokens := int(math.Ceil(float64(len(text)) / float64(tokenLength)))
 
 	return tokens
 }
