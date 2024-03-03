@@ -2,7 +2,7 @@ package mocks
 
 import (
 	"errors"
-	"github.com/grafchitaru/summarize/internal/storage"
+	"github.com/grafchitaru/summarize/internal/models"
 )
 
 type GetUserFunc func(login string) (string, error)
@@ -10,7 +10,7 @@ type GetUserPasswordFunc func(login string) (string, error)
 type RegistrationFunc func(id string, login string, password string) (string, error)
 type GetSummarizeByTextFunc func(text string) (string, error)
 type CreateSummarizeFunc func(id string, user_id string, text string, status string, tokens int) error
-type GetStatusFunc func(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (storage.Status, error)
+type GetStatusFunc func(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (models.Status, error)
 type MockStorage struct {
 	PingError              error
 	GetUserFunc            GetUserFunc
@@ -86,8 +86,8 @@ func (ms *MockStorage) UpdateSummarizeResult(id string, status string, result st
 	return nil
 }
 
-func (ms *MockStorage) GetSummarize(id string, user_id string) (storage.Summarize, error) {
-	return storage.Summarize{}, nil
+func (ms *MockStorage) GetSummarize(id string, user_id string) (models.Summarize, error) {
+	return models.Summarize{}, nil
 }
 
 func (ms *MockStorage) GetSummarizeByText(text string) (string, error) {
@@ -104,10 +104,10 @@ func (ms *MockStorage) CreateSummarize(id string, userID string, text string, st
 	return nil
 }
 
-func (ms *MockStorage) GetStat(user_id string) ([]storage.Stat, error) {
-	return []storage.Stat{}, nil
+func (ms *MockStorage) GetStat(user_id string) ([]models.Stat, error) {
+	return []models.Stat{}, nil
 }
 
-func (ms *MockStorage) GetStatus(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (storage.Status, error) {
-	return storage.Status{}, nil
+func (ms *MockStorage) GetStatus(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (models.Status, error) {
+	return models.Status{}, nil
 }

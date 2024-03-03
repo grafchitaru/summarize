@@ -1,28 +1,6 @@
 package storage
 
-import "time"
-
-type Summarize struct {
-	Id        string    `json:"id"`
-	UserId    string    `json:"user_id"`
-	CreatedAt time.Time `json:"created_at"`
-	Text      string    `json:"text"`
-	Result    string    `json:"result"`
-	Status    string    `json:"status"`
-	Tokens    uint64    `json:"tokens"`
-}
-
-type Stat struct {
-	UserId string `json:"user_id"`
-	Status string `json:"status"`
-	Count  uint64 `json:"count"`
-	Tokens uint64 `json:"tokens"`
-}
-
-type Status struct {
-	Count  int `json:"count"`
-	Tokens int `json:"tokens"`
-}
+import "github.com/grafchitaru/summarize/internal/models"
 
 type Repositories interface {
 	Ping() error
@@ -33,8 +11,8 @@ type Repositories interface {
 	CreateSummarize(id string, user_id string, text string, status string, tokens int) error
 	UpdateSummarizeStatus(id string, status string) error
 	UpdateSummarizeResult(id string, status string, result string) error
-	GetSummarize(id string, user_id string) (Summarize, error)
+	GetSummarize(id string, user_id string) (models.Summarize, error)
 	GetSummarizeByText(text string) (string, error)
-	GetStat(user_id string) ([]Stat, error)
-	GetStatus(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (Status, error)
+	GetStat(user_id string) ([]models.Stat, error)
+	GetStatus(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (models.Status, error)
 }
