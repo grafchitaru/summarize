@@ -2,14 +2,17 @@ package gigachat
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"io"
+	"log"
 	"net/http"
 	"strings"
+	"time"
 	"unicode"
 )
 
@@ -92,9 +95,13 @@ func getAccessToken(clientId string, clientSecret string) (string, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	client := &http.Client{Transport: tr}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   10 * time.Second,
+	}
 	req, err := http.NewRequest("POST", authUrl, strings.NewReader(scope))
 	if err != nil {
+		log.Printf("%s: error create req: %v", op, err) // Логирование ошибки
 		return "", fmt.Errorf("%s: error create req: %w", op, err)
 	}
 
@@ -135,7 +142,6 @@ func (s *Ai) Send(text string, prompt string) (string, error) {
 		UpdateInterval:    0,
 	}
 	jsonPayload, err := json.Marshal(payload)
-
 	if err != nil {
 		return "", fmt.Errorf("%s: error Marshal: %w", op, err)
 	}
@@ -144,11 +150,17 @@ func (s *Ai) Send(text string, prompt string) (string, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	client := &http.Client{Transport: tr}
-	req, err := http.NewRequest("POST", baseUrl+"/chat/completions", bytes.NewReader(jsonPayload))
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   10 * time.Second,
+	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "POST", baseUrl+"/chat/completions", bytes.NewReader(jsonPayload))
 	if err != nil {
-		return "", fmt.Errorf("%s: error send: %w", op, err)
+		return "", fmt.Errorf("%s: error create req: %w", op, err)
 	}
 
 	req.Header.Add("Content-Type", "application/json")
@@ -161,8 +173,11 @@ func (s *Ai) Send(text string, prompt string) (string, error) {
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("%s: unexpected status code: %d", op, res.StatusCode)
+	}
+
 	jsonData, err := io.ReadAll(res.Body)
-	fmt.Println(string(jsonData))
 	if err != nil {
 		return "", fmt.Errorf("%s: error read res: %w", op, err)
 	}
@@ -170,7 +185,11 @@ func (s *Ai) Send(text string, prompt string) (string, error) {
 	var completions Completions
 	err = json.Unmarshal([]byte(jsonData), &completions)
 	if err != nil {
-		fmt.Println("error:", err)
+		return "", fmt.Errorf("%s: error unmarshal res: %w", op, err)
+	}
+
+	if len(completions.Choices) == 0 {
+		return "", fmt.Errorf("%s: no completions found", op)
 	}
 
 	return completions.Choices[0].Message.Content, nil
