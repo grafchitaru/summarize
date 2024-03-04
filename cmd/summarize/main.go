@@ -5,6 +5,7 @@ import (
 	ai2 "github.com/grafchitaru/summarize/internal/ai"
 	"github.com/grafchitaru/summarize/internal/ai/gigachat"
 	"github.com/grafchitaru/summarize/internal/config"
+	"github.com/grafchitaru/summarize/internal/handlers"
 	"github.com/grafchitaru/summarize/internal/server"
 	storage2 "github.com/grafchitaru/summarize/internal/storage"
 	"github.com/grafchitaru/summarize/internal/storage/postgresql"
@@ -29,5 +30,5 @@ func main() {
 
 	defer storage.Close()
 
-	server.New(config.HandlerContext{Config: cfg, Repos: storage, Ai: ai})
+	server.New(handlers.HandlerContext{Config: cfg, Repos: storage, Ai: ai})
 }

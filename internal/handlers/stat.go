@@ -2,12 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/grafchitaru/summarize/internal/config"
 	"github.com/grafchitaru/summarize/internal/middlewares/auth"
 	"net/http"
 )
 
-func Stat(ctx config.HandlerContext, res http.ResponseWriter, req *http.Request) {
+func (ctx *HandlerContext) Stat(res http.ResponseWriter, req *http.Request) {
 	userID, err := auth.GetUserID(req, ctx.Config.SecretKey)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusUnauthorized)

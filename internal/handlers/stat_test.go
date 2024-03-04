@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/grafchitaru/summarize/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -23,14 +22,17 @@ func TestStat(t *testing.T) {
 		return testUserID, nil
 	}
 
-	ctx := config.HandlerContext{Config: *cfg, Repos: mockStorage, Auth: mockAuthService}
-
 	req, err := http.NewRequest("GET", "/api/user/stat", bytes.NewBufferString(""))
 	req.Header.Set("Content-Type", "application/json")
 	require.NoError(t, err)
 	r := httptest.NewRecorder()
 
-	Stat(ctx, r, req)
+	hc := &HandlerContext{
+		Config: *cfg,
+		Repos:  mockStorage,
+		Auth:   mockAuthService,
+	}
+	hc.Stat(r, req)
 
 	rr := httptest.NewRecorder()
 
@@ -44,14 +46,16 @@ func TestStatError(t *testing.T) {
 	cfg := mocks.NewConfig()
 	mockStorage := &mocks.MockStorage{}
 
-	ctx := config.HandlerContext{Config: *cfg, Repos: mockStorage}
-
 	req, err := http.NewRequest("GET", "/api/user/stat", bytes.NewBufferString(""))
 	req.Header.Set("Content-Type", "application/json")
 	require.NoError(t, err)
 	r := httptest.NewRecorder()
 
-	Stat(ctx, r, req)
+	hc := &HandlerContext{
+		Config: *cfg,
+		Repos:  mockStorage,
+	}
+	hc.Stat(r, req)
 
 	assert.Equal(t, http.StatusUnauthorized, r.Code)
 }

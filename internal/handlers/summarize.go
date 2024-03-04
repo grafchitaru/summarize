@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/grafchitaru/summarize/internal/config"
 	"github.com/grafchitaru/summarize/internal/middlewares/auth"
 	"github.com/grafchitaru/summarize/internal/models"
 	"io"
@@ -16,7 +15,7 @@ type Sum struct {
 	Text string `json:"text"`
 }
 
-func Summarize(ctx config.HandlerContext, res http.ResponseWriter, req *http.Request) {
+func (ctx *HandlerContext) Summarize(res http.ResponseWriter, req *http.Request) {
 	var reader io.Reader
 
 	if req.Header.Get(`Content-Encoding`) == `gzip` {

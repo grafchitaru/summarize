@@ -1,11 +1,10 @@
 package handlers
 
 import (
-	"github.com/grafchitaru/summarize/internal/config"
 	"net/http"
 )
 
-func Ping(ctx config.HandlerContext, res http.ResponseWriter) {
+func (ctx *HandlerContext) Ping(res http.ResponseWriter, req *http.Request) {
 	err := ctx.Repos.Ping()
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)

@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/grafchitaru/summarize/internal/config"
 	"github.com/grafchitaru/summarize/internal/mocks"
 	"github.com/stretchr/testify/assert"
 )
@@ -52,9 +51,10 @@ func TestRegister(t *testing.T) {
 
 			r := httptest.NewRecorder()
 
-			ctx := config.HandlerContext{Repos: tt.mockStorage}
-
-			Register(ctx, r, req)
+			hc := &HandlerContext{
+				Repos: tt.mockStorage,
+			}
+			hc.Register(r, req)
 
 			assert.Equal(t, tt.expectedStatus, r.Code)
 

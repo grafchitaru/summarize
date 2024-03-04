@@ -10,7 +10,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/grafchitaru/summarize/internal/config"
 	"github.com/grafchitaru/summarize/internal/mocks"
 	"github.com/stretchr/testify/assert"
 )
@@ -75,9 +74,11 @@ func TestLogin(t *testing.T) {
 
 			r := httptest.NewRecorder()
 
-			ctx := config.HandlerContext{Config: *cfg, Repos: tt.mockStorage}
-
-			Login(ctx, r, req)
+			hc := &HandlerContext{
+				Config: *cfg,
+				Repos:  tt.mockStorage,
+			}
+			hc.Login(r, req)
 
 			fmt.Println("WTF:", tt.expectedStatus)
 

@@ -3,7 +3,6 @@ package auth
 import (
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
-	"github.com/grafchitaru/summarize/internal/config"
 	"net/http"
 )
 
@@ -24,7 +23,7 @@ type UserDataID struct {
 	Value uuid.UUID
 }
 
-func WithUserCookie(ctx config.HandlerContext) func(next http.Handler) http.Handler {
+func WithUserCookie(secretKey string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie("token")
@@ -40,7 +39,7 @@ func WithUserCookie(ctx config.HandlerContext) func(next http.Handler) http.Hand
 				}
 			} else {
 				_, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
-					return []byte(ctx.Config.SecretKey), nil
+					return []byte(secretKey), nil
 				})
 
 				if err != nil {

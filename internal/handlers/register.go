@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/grafchitaru/summarize/internal/config"
 	"github.com/grafchitaru/summarize/internal/middlewares/auth"
 	"github.com/grafchitaru/summarize/internal/users"
 	"io"
@@ -21,7 +20,7 @@ type Result struct {
 	Id string `json:"id"`
 }
 
-func Register(ctx config.HandlerContext, res http.ResponseWriter, req *http.Request) {
+func (ctx *HandlerContext) Register(res http.ResponseWriter, req *http.Request) {
 	var reader io.Reader
 
 	if req.Header.Get(`Content-Encoding`) == `gzip` {

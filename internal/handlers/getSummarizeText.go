@@ -3,12 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
-	"github.com/grafchitaru/summarize/internal/config"
 	"github.com/grafchitaru/summarize/internal/middlewares/auth"
 	"net/http"
 )
 
-func GetSummarizeText(ctx config.HandlerContext, res http.ResponseWriter, req *http.Request) {
+func (ctx *HandlerContext) GetSummarizeText(res http.ResponseWriter, req *http.Request) {
 	summarizeID := chi.URLParam(req, "id")
 	if summarizeID == "" {
 		http.Error(res, "ID not found", http.StatusNotFound)

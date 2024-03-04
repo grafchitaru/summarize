@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/grafchitaru/summarize/internal/config"
 	"github.com/grafchitaru/summarize/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,15 +32,18 @@ func TestSummarize(t *testing.T) {
 		return testUserID, nil
 	}
 
-	ctx := config.HandlerContext{Config: *cfg, Repos: mockStorage, Auth: mockAuthService}
-
 	body, _ := json.Marshal(Sum{Text: "В значительной степени обуславливает создание направлений прогрессивного развития."})
 	req, err := http.NewRequest("POST", "/api/user/summarize", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	require.NoError(t, err)
 	r := httptest.NewRecorder()
 
-	Summarize(ctx, r, req)
+	hc := &HandlerContext{
+		Config: *cfg,
+		Repos:  mockStorage,
+		Auth:   mockAuthService,
+	}
+	hc.Summarize(r, req)
 
 	rr := httptest.NewRecorder()
 
@@ -65,15 +67,18 @@ func TestSummarize_CreateError(t *testing.T) {
 		return testUserID, nil
 	}
 
-	ctx := config.HandlerContext{Config: *cfg, Repos: mockStorage, Auth: mockAuthService}
-
 	body, _ := json.Marshal(Sum{Text: "В значительной степени обуславливает создание направлений прогрессивного развития."})
 	req, err := http.NewRequest("POST", "/api/user/summarize", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	require.NoError(t, err)
 	r := httptest.NewRecorder()
 
-	Summarize(ctx, r, req)
+	hc := &HandlerContext{
+		Config: *cfg,
+		Repos:  mockStorage,
+		Auth:   mockAuthService,
+	}
+	hc.Summarize(r, req)
 
 	assert.Equal(t, http.StatusUnauthorized, r.Code)
 }

@@ -4,9 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/caarlos0/env/v6"
-	ai2 "github.com/grafchitaru/summarize/internal/ai"
-	"github.com/grafchitaru/summarize/internal/auth"
-	"github.com/grafchitaru/summarize/internal/storage"
 	"github.com/joho/godotenv"
 	"log"
 )
@@ -21,13 +18,6 @@ type Config struct {
 	AiSummarizePrompt    string `env:"AI_SUMMARIZE_PROMPT" envDefault:"Напиши краткое изложение следующего содержания:\n"`
 	AiMaxLimitCount      int    `env:"AI_MAX_LIMIT_COUNT" envDefault:"1000"`
 	AiMaxLimitTokens     int    `env:"AI_MAX_LIMIT_TOKENS" envDefault:"50000"`
-}
-
-type HandlerContext struct {
-	Config Config
-	Repos  storage.Repositories
-	Ai     ai2.AI
-	Auth   auth.AuthService
 }
 
 type Configs interface {

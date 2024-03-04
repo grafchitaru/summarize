@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"errors"
-	"github.com/grafchitaru/summarize/internal/config"
 	"github.com/grafchitaru/summarize/internal/mocks"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -34,9 +34,14 @@ func TestPing(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := httptest.NewRecorder()
-			http.NewRequest("GET", "/ping", nil)
-			ctx := config.HandlerContext{Repos: tt.mockStorage}
-			Ping(ctx, r)
+			req, err := http.NewRequest("GET", "/ping", nil)
+			require.NoError(t, err)
+
+			hc := &HandlerContext{
+				Repos: tt.mockStorage,
+			}
+			hc.Ping(r, req)
+
 			if status := r.Code; status != tt.expectedStatus {
 				t.Errorf("handler returned wrong status code: got %v want %v", status, tt.expectedStatus)
 			}

@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/grafchitaru/summarize/internal/config"
 	"github.com/grafchitaru/summarize/internal/handlers"
 	"github.com/grafchitaru/summarize/internal/middlewares/auth"
 	"github.com/grafchitaru/summarize/internal/middlewares/compress"
@@ -11,41 +10,32 @@ import (
 	"net/http"
 )
 
-func New(ctx config.HandlerContext) {
+func New(ctx handlers.HandlerContext) {
+	hc := &handlers.HandlerContext{
+		Config: ctx.Config,
+		Repos:  ctx.Repos,
+		Ai:     ctx.Ai,
+	}
 
 	r := chi.NewRouter()
 
 	r.Use(logger.WithLogging)
 	r.Use(compress.WithCompressionResponse)
-	r.Use(auth.WithUserCookie(ctx))
+	r.Use(auth.WithUserCookie(hc.Config.SecretKey))
 
-	r.Get("/ping", func(res http.ResponseWriter, req *http.Request) {
-		handlers.Ping(ctx, res)
-	})
+	r.Post("/ping", hc.Ping)
 
-	r.Post("/api/user/register", func(res http.ResponseWriter, req *http.Request) {
-		handlers.Register(ctx, res, req)
-	})
+	r.Post("/api/user/register", hc.Register)
 
-	r.Post("/api/user/login", func(res http.ResponseWriter, req *http.Request) {
-		handlers.Login(ctx, res, req)
-	})
+	r.Post("/api/user/login", hc.Login)
 
-	r.Post("/api/user/summarize", func(res http.ResponseWriter, req *http.Request) {
-		handlers.Summarize(ctx, res, req)
-	})
+	r.Post("/api/user/summarize", hc.Summarize)
 
-	r.Get("/api/user/summarize/{id}", func(res http.ResponseWriter, req *http.Request) {
-		handlers.GetSummarizeText(ctx, res, req)
-	})
+	r.Get("/api/user/summarize/{id}", hc.GetSummarizeText)
 
-	r.Get("/api/user/stat", func(res http.ResponseWriter, req *http.Request) {
-		handlers.Stat(ctx, res, req)
-	})
+	r.Get("/api/user/stat", hc.Stat)
 
-	r.Get("/api/user/status", func(res http.ResponseWriter, req *http.Request) {
-		handlers.Status(ctx, res, req)
-	})
+	r.Get("/api/user/status", hc.Status)
 
 	err := http.ListenAndServe(ctx.Config.HTTPServerAddress, r)
 	if err != nil {
