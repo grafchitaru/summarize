@@ -9,7 +9,7 @@ type GetUserFunc func(login string) (string, error)
 type GetUserPasswordFunc func(login string) (string, error)
 type RegistrationFunc func(id string, login string, password string) (string, error)
 type GetSummarizeByTextFunc func(text string) (string, error)
-type CreateSummarizeFunc func(id string, user_id string, text string, status string, tokens int) error
+type CreateSummarizeFunc func(summarize models.NewSummarize) error
 type GetStatusFunc func(user_id string, AiMaxLimitCount int, AiMaxLimitTokens int) (models.Status, error)
 type MockStorage struct {
 	PingError              error
@@ -97,9 +97,9 @@ func (ms *MockStorage) GetSummarizeByText(text string) (string, error) {
 	return "", errors.New("not found")
 }
 
-func (ms *MockStorage) CreateSummarize(id string, userID string, text string, status string, tokens int) error {
+func (ms *MockStorage) CreateSummarize(summarize models.NewSummarize) error {
 	if ms.CreateSummarizeFunc != nil {
-		return ms.CreateSummarizeFunc(id, userID, text, status, tokens)
+		return ms.CreateSummarizeFunc(summarize)
 	}
 	return nil
 }

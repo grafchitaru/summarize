@@ -105,7 +105,7 @@ func (s *Storage) Registration(id string, login string, password string) (string
 	return id, nil
 }
 
-func (s *Storage) CreateSummarize(id string, user_id string, text string, status string, tokens int) error {
+func (s *Storage) CreateSummarize(summarize models.NewSummarize) error {
 	const op = "storage.postgresql.CreateSummarize"
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -122,7 +122,7 @@ func (s *Storage) CreateSummarize(id string, user_id string, text string, status
 	_, err = tx.Exec(ctx, `
         INSERT INTO summarize(id, user_id, created_at, updated_at, text, status, tokens)   
         VALUES($1, $2, $3, $4, $5, $6, $7);
-    `, id, user_id, now.Format("2006-01-02  15:04:05"), now.Format("2006-01-02  15:04:05"), text, status, tokens)
+    `, summarize.Id, summarize.UserId, now.Format("2006-01-02  15:04:05"), now.Format("2006-01-02  15:04:05"), summarize.Text, summarize.Status, summarize.Tokens)
 	if err != nil {
 		return fmt.Errorf("%s exec: %w", op, err)
 	}

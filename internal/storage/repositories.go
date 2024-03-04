@@ -8,7 +8,7 @@ type Repositories interface {
 	GetUser(login string) (string, error)
 	GetUserPassword(login string) (string, error)
 	Registration(id string, login string, password string) (string, error)
-	CreateSummarize(id string, user_id string, text string, status string, tokens int) error
+	CreateSummarize(summarize models.NewSummarize) error
 	UpdateSummarizeStatus(id string, status string) error
 	UpdateSummarizeResult(id string, status string, result string) error
 	GetSummarize(id string, user_id string) (models.Summarize, error)

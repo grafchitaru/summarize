@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/grafchitaru/summarize/internal/config"
+	"github.com/grafchitaru/summarize/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -22,7 +23,7 @@ func TestSummarize(t *testing.T) {
 	cfg := mocks.NewConfig()
 	testUserID := "556501c0-a97d-47ed-9add-73b4a4116c83"
 	mockStorage := &mocks.MockStorage{
-		CreateSummarizeFunc: func(id string, user_id string, text string, status string, tokens int) error {
+		CreateSummarizeFunc: func(summarize models.NewSummarize) error {
 			return nil
 		},
 	}
@@ -54,7 +55,7 @@ func TestSummarize_CreateError(t *testing.T) {
 	cfg := mocks.NewConfig()
 	testUserID := "556501c0-a97d-47ed-9add-73b4a4116c83"
 	mockStorage := &mocks.MockStorage{
-		CreateSummarizeFunc: func(id string, user_id string, text string, status string, tokens int) error {
+		CreateSummarizeFunc: func(summarize models.NewSummarize) error {
 			return errors.New("create summarize error")
 		},
 	}

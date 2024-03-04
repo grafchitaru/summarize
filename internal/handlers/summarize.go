@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/grafchitaru/summarize/internal/config"
 	"github.com/grafchitaru/summarize/internal/middlewares/auth"
+	"github.com/grafchitaru/summarize/internal/models"
 	"io"
 	"net/http"
 )
@@ -74,7 +75,15 @@ func Summarize(ctx config.HandlerContext, res http.ResponseWriter, req *http.Req
 
 	summarizeID := uuid.New()
 
-	err = ctx.Repos.CreateSummarize(summarizeID.String(), userID, text, "Init", ctx.Ai.GetCountTokens(text))
+	summarize := models.NewSummarize{
+		Id:     summarizeID.String(),
+		UserId: userID,
+		Text:   text,
+		Status: "Init",
+		Tokens: ctx.Ai.GetCountTokens(text),
+	}
+
+	err = ctx.Repos.CreateSummarize(summarize)
 	if err != nil {
 		http.Error(res, "Error Create Summarize:"+fmt.Sprintf("%d", err), http.StatusInternalServerError)
 		return
