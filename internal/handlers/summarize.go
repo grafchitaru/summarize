@@ -9,6 +9,7 @@ import (
 	"github.com/grafchitaru/summarize/internal/models"
 	"io"
 	"net/http"
+	"sync"
 )
 
 type Sum struct {
@@ -44,31 +45,11 @@ func (ctx *HandlerContext) Summarize(res http.ResponseWriter, req *http.Request)
 	}
 	text := sum.Text
 
+	chunks := SplitTextIntoChunks(text, 20000)
+
 	userID, err := auth.GetUserID(req, ctx.Config.SecretKey)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	if len(text) > ctx.Config.AiMaxLenText {
-		http.Error(res, "Text ,more len:"+fmt.Sprintf("%d", ctx.Config.AiMaxLenText), http.StatusUnprocessableEntity)
-		return
-	}
-
-	sumID, err := ctx.Repos.GetSummarizeByText(text)
-	if err == nil {
-		result := Result{
-			Id: sumID,
-		}
-		data, err := json.Marshal(result)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		res.Header().Set("Content-Type", "application/json")
-		res.WriteHeader(http.StatusOK)
-		res.Write(data)
 		return
 	}
 
@@ -88,20 +69,6 @@ func (ctx *HandlerContext) Summarize(res http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	go func() {
-		summarizeText, err := ctx.Ai.Send(text, ctx.Config.AiSummarizePrompt)
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		err = ctx.Repos.UpdateSummarizeResult(summarizeID.String(), "Complete", summarizeText)
-		if err != nil {
-			http.Error(res, "Error Save Summarize:"+fmt.Sprintf("%d", err), http.StatusInternalServerError)
-			return
-		}
-	}()
-
 	result := Result{
 		Id: summarizeID.String(),
 	}
@@ -114,4 +81,54 @@ func (ctx *HandlerContext) Summarize(res http.ResponseWriter, req *http.Request)
 	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusOK)
 	res.Write(data)
+
+	go func() {
+		var wg sync.WaitGroup
+		var summarizedTexts []string
+
+		wg.Add(len(chunks))
+
+		for _, chunk := range chunks {
+			go func(chunk string) {
+				defer wg.Done()
+
+				summarizedChunk, err := ctx.Ai.Send(chunk, ctx.Config.AiSummarizePrompt)
+				if err != nil {
+					http.Error(res, err.Error(), http.StatusBadRequest)
+					return
+				}
+
+				summarizedTexts = append(summarizedTexts, summarizedChunk)
+			}(chunk)
+		}
+
+		wg.Wait()
+
+		finalSummarizedText := fmt.Sprintf("%s", summarizedTexts)
+
+		finalSummarizedText, err = ctx.Ai.Send(finalSummarizedText, ctx.Config.AiSummarizePrompt)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		err = ctx.Repos.UpdateSummarizeResult(summarizeID.String(), "Complete", finalSummarizedText)
+		if err != nil {
+			http.Error(res, "Error Save Summarize:"+fmt.Sprintf("%d", err), http.StatusInternalServerError)
+			return
+		}
+	}()
+}
+
+func SplitTextIntoChunks(text string, chunkSize int) []string {
+	var chunks []string
+	runes := []rune(text)
+	for i := 0; i < len(runes); i += chunkSize {
+		end := i + chunkSize
+		if end > len(runes) {
+			end = len(runes)
+		}
+		chunks = append(chunks, string(runes[i:end]))
+	}
+	return chunks
 }
