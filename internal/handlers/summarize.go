@@ -84,26 +84,23 @@ func (ctx *HandlerContext) Summarize(res http.ResponseWriter, req *http.Request)
 
 	err = ctx.Repos.CreateSummarize(summarize)
 	if err != nil {
-		http.Error(res, "Error Create Summarize:"+fmt.Sprintf("%d", err), http.StatusInternalServerError)
+		http.Error(res, "Error Create Summarize:"+fmt.Sprintf("%s", err), http.StatusInternalServerError)
 		return
 	}
 
-	summarizeText, err := ctx.Ai.Send(text, ctx.Config.AiSummarizePrompt)
-	if err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = ctx.Repos.UpdateSummarizeResult(summarizeID.String(), "Complete", summarizeText)
-	if err != nil {
-		http.Error(res, "Error Save Summarize:"+fmt.Sprintf("%d", err), http.StatusInternalServerError)
-		err = ctx.Repos.UpdateSummarizeStatus(summarizeID.String(), "Error")
+	go func() {
+		summarizeText, err := ctx.Ai.Send(text, ctx.Config.AiSummarizePrompt)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusBadRequest)
 			return
 		}
-		return
-	}
+
+		err = ctx.Repos.UpdateSummarizeResult(summarizeID.String(), "Complete", summarizeText)
+		if err != nil {
+			http.Error(res, "Error Save Summarize:"+fmt.Sprintf("%d", err), http.StatusInternalServerError)
+			return
+		}
+	}()
 
 	result := Result{
 		Id: summarizeID.String(),
