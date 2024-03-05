@@ -27,7 +27,7 @@ func TestGetSummarizeText(t *testing.T) {
 	require.NoError(t, err)
 	r := httptest.NewRecorder()
 
-	hc := &HandlerContext{
+	hc := &Handlers{
 		Config: *cfg,
 		Repos:  mockStorage,
 		Auth:   mockAuthService,
@@ -50,7 +50,7 @@ func TestGetSummarizeTextError(t *testing.T) {
 
 	r := httptest.NewRecorder()
 
-	hc := &HandlerContext{
+	hc := &Handlers{
 		Config: *cfg,
 		Repos:  mockStorage,
 	}

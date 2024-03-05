@@ -7,7 +7,7 @@ import (
 	"github.com/grafchitaru/summarize/internal/storage"
 )
 
-type HandlerContext struct {
+type Handlers struct {
 	Config config.Config
 	Repos  storage.Repositories
 	Ai     ai2.AI

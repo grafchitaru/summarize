@@ -20,7 +20,7 @@ type Result struct {
 	Id string `json:"id"`
 }
 
-func (ctx *HandlerContext) Register(res http.ResponseWriter, req *http.Request) {
+func (ctx *Handlers) Register(res http.ResponseWriter, req *http.Request) {
 	var reader io.Reader
 
 	if req.Header.Get(`Content-Encoding`) == `gzip` {

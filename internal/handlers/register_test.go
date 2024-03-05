@@ -51,7 +51,7 @@ func TestRegister(t *testing.T) {
 
 			r := httptest.NewRecorder()
 
-			hc := &HandlerContext{
+			hc := &Handlers{
 				Repos: tt.mockStorage,
 			}
 			hc.Register(r, req)

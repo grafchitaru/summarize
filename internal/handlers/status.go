@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (ctx *HandlerContext) Status(res http.ResponseWriter, req *http.Request) {
+func (ctx *Handlers) Status(res http.ResponseWriter, req *http.Request) {
 	userID, err := auth.GetUserID(req, ctx.Config.SecretKey)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusUnauthorized)

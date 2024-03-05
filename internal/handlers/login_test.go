@@ -74,7 +74,7 @@ func TestLogin(t *testing.T) {
 
 			r := httptest.NewRecorder()
 
-			hc := &HandlerContext{
+			hc := &Handlers{
 				Config: *cfg,
 				Repos:  tt.mockStorage,
 			}

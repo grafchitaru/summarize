@@ -37,7 +37,7 @@ func TestPing(t *testing.T) {
 			req, err := http.NewRequest("GET", "/ping", nil)
 			require.NoError(t, err)
 
-			hc := &HandlerContext{
+			hc := &Handlers{
 				Repos: tt.mockStorage,
 			}
 			hc.Ping(r, req)

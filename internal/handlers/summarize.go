@@ -16,7 +16,7 @@ type Sum struct {
 	Text string `json:"text"`
 }
 
-func (ctx *HandlerContext) Summarize(res http.ResponseWriter, req *http.Request) {
+func (ctx *Handlers) Summarize(res http.ResponseWriter, req *http.Request) {
 	var reader io.Reader
 
 	if req.Header.Get(`Content-Encoding`) == `gzip` {

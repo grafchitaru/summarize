@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func (ctx *HandlerContext) Login(res http.ResponseWriter, req *http.Request) {
+func (ctx *Handlers) Login(res http.ResponseWriter, req *http.Request) {
 	var reader io.Reader
 
 	if req.Header.Get(`Content-Encoding`) == `gzip` {

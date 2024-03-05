@@ -38,7 +38,7 @@ func TestSummarize(t *testing.T) {
 	require.NoError(t, err)
 	r := httptest.NewRecorder()
 
-	hc := &HandlerContext{
+	hc := &Handlers{
 		Config: *cfg,
 		Repos:  mockStorage,
 		Auth:   mockAuthService,
@@ -73,7 +73,7 @@ func TestSummarize_CreateError(t *testing.T) {
 	require.NoError(t, err)
 	r := httptest.NewRecorder()
 
-	hc := &HandlerContext{
+	hc := &Handlers{
 		Config: *cfg,
 		Repos:  mockStorage,
 		Auth:   mockAuthService,

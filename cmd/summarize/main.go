@@ -30,5 +30,5 @@ func main() {
 
 	defer storage.Close()
 
-	server.New(handlers.HandlerContext{Config: cfg, Repos: storage, Ai: ai})
+	server.New(handlers.Handlers{Config: cfg, Repos: storage, Ai: ai})
 }

@@ -10,8 +10,8 @@ import (
 	"net/http"
 )
 
-func New(ctx handlers.HandlerContext) {
-	hc := &handlers.HandlerContext{
+func New(ctx handlers.Handlers) {
+	hc := &handlers.Handlers{
 		Config: ctx.Config,
 		Repos:  ctx.Repos,
 		Ai:     ctx.Ai,

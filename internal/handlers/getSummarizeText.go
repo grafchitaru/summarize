@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (ctx *HandlerContext) GetSummarizeText(res http.ResponseWriter, req *http.Request) {
+func (ctx *Handlers) GetSummarizeText(res http.ResponseWriter, req *http.Request) {
 	summarizeID := chi.URLParam(req, "id")
 	if summarizeID == "" {
 		http.Error(res, "ID not found", http.StatusNotFound)
