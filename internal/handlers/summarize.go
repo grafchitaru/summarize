@@ -5,13 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/grafchitaru/summarize/internal/domain"
 	"github.com/grafchitaru/summarize/internal/middlewares/auth"
 	"github.com/grafchitaru/summarize/internal/models"
 	"io"
-	"log"
 	"net/http"
-	"strings"
-	"sync"
 )
 
 type Sum struct {
@@ -46,8 +44,6 @@ func (ctx *Handlers) Summarize(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	text := sum.Text
-
-	chunks := SplitTextIntoChunks(text, 20000)
 
 	userID, err := auth.GetUserID(req, ctx.Config.SecretKey)
 	if err != nil {
@@ -84,52 +80,12 @@ func (ctx *Handlers) Summarize(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 	res.Write(data)
 
-	var sb strings.Builder
-
-	go func() {
-		var wg sync.WaitGroup
-		wg.Add(len(chunks))
-
-		for _, chunk := range chunks {
-			go func(chunk string) {
-				defer wg.Done()
-
-				summarizedChunk, err := ctx.Ai.Send(chunk, ctx.Config.AiSummarizePrompt)
-				if err != nil {
-					log.Printf("%s: error summarizedChunk: %v", "handler.summarize", err)
-					return
-				}
-				sb.WriteString(summarizedChunk)
-			}(chunk)
-		}
-
-		wg.Wait()
-
-		finalSummarizedText := sb.String()
-
-		finalSummarizedText, err = ctx.Ai.Send(finalSummarizedText, ctx.Config.AiSummarizePrompt)
-		if err != nil {
-			log.Printf("%s: error finalSummarizedText: %v", "handler.summarize", err)
-			return
-		}
-
-		err = ctx.Repos.UpdateSummarizeResult(summarizeID.String(), "Complete", finalSummarizedText)
-		if err != nil {
-			http.Error(res, "Error Save Summarize:"+fmt.Sprintf("%d", err), http.StatusInternalServerError)
-			return
-		}
-	}()
-}
-
-func SplitTextIntoChunks(text string, chunkSize int) []string {
-	var chunks []string
-	runes := []rune(text)
-	for i := 0; i < len(runes); i += chunkSize {
-		end := i + chunkSize
-		if end > len(runes) {
-			end = len(runes)
-		}
-		chunks = append(chunks, string(runes[i:end]))
+	summarizer := domain.Sum{
+		Id:     summarizeID.String(),
+		Text:   text,
+		Prompt: ctx.Config.AiSummarizePrompt,
+		Ai:     ctx.Ai,
+		Repos:  ctx.Repos,
 	}
-	return chunks
+	domain.Summarize(summarizer)
 }
