@@ -8,7 +8,9 @@ import (
 	"github.com/grafchitaru/summarize/internal/middlewares/auth"
 	"github.com/grafchitaru/summarize/internal/models"
 	"io"
+	"log"
 	"net/http"
+	"strings"
 	"sync"
 )
 
@@ -82,10 +84,10 @@ func (ctx *Handlers) Summarize(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 	res.Write(data)
 
+	var sb strings.Builder
+
 	go func() {
 		var wg sync.WaitGroup
-		var summarizedTexts []string
-
 		wg.Add(len(chunks))
 
 		for _, chunk := range chunks {
@@ -94,21 +96,20 @@ func (ctx *Handlers) Summarize(res http.ResponseWriter, req *http.Request) {
 
 				summarizedChunk, err := ctx.Ai.Send(chunk, ctx.Config.AiSummarizePrompt)
 				if err != nil {
-					http.Error(res, err.Error(), http.StatusBadRequest)
+					log.Printf("%s: error summarizedChunk: %v", "handler.summarize", err)
 					return
 				}
-
-				summarizedTexts = append(summarizedTexts, summarizedChunk)
+				sb.WriteString(summarizedChunk)
 			}(chunk)
 		}
 
 		wg.Wait()
 
-		finalSummarizedText := fmt.Sprintf("%s", summarizedTexts)
+		finalSummarizedText := sb.String()
 
 		finalSummarizedText, err = ctx.Ai.Send(finalSummarizedText, ctx.Config.AiSummarizePrompt)
 		if err != nil {
-			http.Error(res, err.Error(), http.StatusBadRequest)
+			log.Printf("%s: error finalSummarizedText: %v", "handler.summarize", err)
 			return
 		}
 
