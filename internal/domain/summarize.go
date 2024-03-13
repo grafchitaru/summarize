@@ -23,7 +23,7 @@ func Summarize(sum Sum) {
 	go func() {
 		var wg sync.WaitGroup
 		wg.Add(len(chunks))
-
+		//TODO Worker Pool
 		for _, chunk := range chunks {
 			go func(chunk string) {
 				defer wg.Done()
